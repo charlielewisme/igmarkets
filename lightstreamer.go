@@ -63,8 +63,8 @@ type MarketTick struct {
 	RawUpdate     string      // The raw payload from the lightstreamer API
 	Time          time.Time   `lightstreamer:"UPDATE_TIME,timeFromHHMMSS"`
 	MarketDelay   bool        `lightstreamer:"MARKET_DELAY,boolFromInt"`
-	Bid           float64     `lightstreamer:"BID"`
-	Ask           float64     `lightstreamer:"OFFER"`
+	Bid           float64     `lightstreamer:"BIDPRICE1"`
+	Ask           float64     `lightstreamer:"ASKPRICE1"`
 	High          float64     `lightstreamer:"HIGH"`
 	Low           float64     `lightstreamer:"LOW"`
 	MidOpen       float64     `lightstreamer:"MID_OPEN"`
@@ -188,7 +188,7 @@ const LightstreamerProtocolVersion = "TLCP-2.4.0.lightstreamer.com"
 
 const chartTickFields = "BID OFR DAY_NET_CHG_MID DAY_PERC_CHG_MID LTP LTV TTV UTM DAY_OPEN_MID DAY_HIGH DAY_LOW"
 
-const marketTickFields = "BID OFFER CHANGE CHANGE_PCT UPDATE_TIME MARKET_DELAY MID_OPEN HIGH LOW MARKET_STATE"
+const marketTickFields = "BIDPRICE1 ASKPRICE1 MID_OPEN HIGH LOW"
 
 const tradeFields = "CONFIRMS OPU WOU"
 
