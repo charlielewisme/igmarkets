@@ -553,7 +553,6 @@ func (ls *LightStreamerConnection) writeLoop(ctx context.Context) {
 				ctrlVals.Set("LS_subId", fmt.Sprintf("%s", subReq.subscriptionId))
 				ctrlVals.Set("LS_group", strings.Join(items, " "))
 				ctrlVals.Set("LS_schema", chartTickFields)
-				ctrlVals.Set("LS_data_adapter", "QUOTE_ADAPTER")
 				ctrlVals.Set("LS_reqId", fmt.Sprintf("%s", subReq.requestID))
 				msg := []byte("control\r\n" + ctrlVals.Encode())
 				err := ls.wsConn.WriteMessage(websocket.TextMessage, msg)
@@ -572,7 +571,7 @@ func (ls *LightStreamerConnection) writeLoop(ctx context.Context) {
 				requestID := rand.Int63()
 				var items = make([]string, len(subReq.items))
 				for i, epic := range subReq.items {
-					items[i] = fmt.Sprintf("MARKET:%s", epic)
+					items[i] = fmt.Sprintf("PRICE:%s:%s", ls.ig.AccountID, epic)
 				}
 				subReq.requestID = fmt.Sprintf("%d", requestID)
 				subReq.subscriptionId = fmt.Sprintf("%d", ls.nextSubscriptionId)
@@ -584,7 +583,7 @@ func (ls *LightStreamerConnection) writeLoop(ctx context.Context) {
 				ctrlVals.Set("LS_subId", fmt.Sprintf("%s", subReq.subscriptionId))
 				ctrlVals.Set("LS_group", strings.Join(items, " "))
 				ctrlVals.Set("LS_schema", marketTickFields)
-				ctrlVals.Set("LS_data_adapter", "QUOTE_ADAPTER")
+				ctrlVals.Set("LS_data_adapter", "Pricing")
 				ctrlVals.Set("LS_reqId", fmt.Sprintf("%s", subReq.requestID))
 				msg := []byte("control\r\n" + ctrlVals.Encode())
 
@@ -646,7 +645,6 @@ func (ls *LightStreamerConnection) writeLoop(ctx context.Context) {
 				ctrlVals.Set("LS_subId", fmt.Sprintf("%s", subReq.subscriptionId))
 				ctrlVals.Set("LS_group", strings.Join(items, " "))
 				ctrlVals.Set("LS_schema", chartCandleFields)
-				ctrlVals.Set("LS_data_adapter", "QUOTE_ADAPTER")
 				ctrlVals.Set("LS_reqId", fmt.Sprintf("%s", subReq.requestID))
 				msg := []byte("control\r\n" + ctrlVals.Encode())
 				err := ls.wsConn.WriteMessage(websocket.TextMessage, msg)
