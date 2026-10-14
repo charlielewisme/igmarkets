@@ -553,6 +553,7 @@ func (ls *LightStreamerConnection) writeLoop(ctx context.Context) {
 				ctrlVals.Set("LS_subId", fmt.Sprintf("%s", subReq.subscriptionId))
 				ctrlVals.Set("LS_group", strings.Join(items, " "))
 				ctrlVals.Set("LS_schema", chartTickFields)
+				ctrlVals.Set("LS_data_adapter", "QUOTE_ADAPTER")
 				ctrlVals.Set("LS_reqId", fmt.Sprintf("%s", subReq.requestID))
 				msg := []byte("control\r\n" + ctrlVals.Encode())
 				err := ls.wsConn.WriteMessage(websocket.TextMessage, msg)
@@ -583,6 +584,7 @@ func (ls *LightStreamerConnection) writeLoop(ctx context.Context) {
 				ctrlVals.Set("LS_subId", fmt.Sprintf("%s", subReq.subscriptionId))
 				ctrlVals.Set("LS_group", strings.Join(items, " "))
 				ctrlVals.Set("LS_schema", marketTickFields)
+				ctrlVals.Set("LS_data_adapter", "QUOTE_ADAPTER")
 				ctrlVals.Set("LS_reqId", fmt.Sprintf("%s", subReq.requestID))
 				msg := []byte("control\r\n" + ctrlVals.Encode())
 
@@ -644,6 +646,7 @@ func (ls *LightStreamerConnection) writeLoop(ctx context.Context) {
 				ctrlVals.Set("LS_subId", fmt.Sprintf("%s", subReq.subscriptionId))
 				ctrlVals.Set("LS_group", strings.Join(items, " "))
 				ctrlVals.Set("LS_schema", chartCandleFields)
+				ctrlVals.Set("LS_data_adapter", "QUOTE_ADAPTER")
 				ctrlVals.Set("LS_reqId", fmt.Sprintf("%s", subReq.requestID))
 				msg := []byte("control\r\n" + ctrlVals.Encode())
 				err := ls.wsConn.WriteMessage(websocket.TextMessage, msg)
@@ -982,7 +985,7 @@ func handleUnsubscribe[T MarketTick | ChartTick | ChartCandle | TradeUpdate](sub
 			foundIndex = i
 			select {
 			case sub.errChan <- nil:
-				close(sub.channel)
+				safeClose(sub.channel)
 			}
 			break
 		}
@@ -1165,19 +1168,25 @@ func unsubscribe[T MarketTick | ChartTick | ChartCandle | TradeUpdate](ls *Light
 	return <-unsubReq.errChan
 }
 
+// safeClose closes a channel without panicking if it is already closed.
+func safeClose[T any](ch chan T) {
+	defer func() { _ = recover() }()
+	close(ch)
+}
+
 func (ls *LightStreamerConnection) Close() error {
 	ls.closeRequested.Store(true)
 	ls.cancelFunc()
 
 	defer func() {
 		for _, sub := range ls.marketSubscriptions {
-			close(sub.channel)
+			safeClose(sub.channel)
 		}
 		for _, sub := range ls.chartTickSubscriptions {
-			close(sub.channel)
+			safeClose(sub.channel)
 		}
 		for _, sub := range ls.chartCandleSubscriptions {
-			close(sub.channel)
+			safeClose(sub.channel)
 		}
 		ls.chartTickSubscriptions = nil
 		ls.marketSubscriptions = nil
